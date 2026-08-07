@@ -64,7 +64,9 @@ function start(mobile){
   isMobileInput = mobile;
   // remember choice
   try{ localStorage.setItem(STORAGE_KEY, mobile ? 'mobile' : 'pc'); }catch(e){}
+  // hide overlays that may be visible
   overlay.classList.add('hidden');
+  gameOverEl.classList.add('hidden');
   setTimeout(()=>overlay.classList.remove('visible'),200);
   init();
 }
@@ -90,6 +92,9 @@ function init(){
 }
 
 function reset(){
+  // hide gameOver modal immediately
+  gameOverEl.classList.add('hidden');
+
   // If player previously chose a mode, resume that automatically
   const storedChoice = getStoredChoice();
   if(storedChoice !== null){
@@ -98,7 +103,6 @@ function reset(){
     return;
   }
 
-  gameOverEl.classList.add('hidden');
   overlay.classList.remove('hidden');
 }
 

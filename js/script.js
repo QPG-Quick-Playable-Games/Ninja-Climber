@@ -18,9 +18,24 @@ let shakeAmt = 0;
 
 const GRAVITY = 0.8;
 
+function getWallWidth(){
+  return Math.min(140, W*0.2);
+}
+function getPlayerXForSide(side, radius){
+  const wallW = getWallWidth();
+  const gap = Math.max(6, Math.floor(radius*0.2));
+  if(side === 'left') return wallW + gap;
+  return W - wallW - gap;
+}
+
 window.addEventListener('resize', ()=>{
   W = canvas.width = innerWidth;
   H = canvas.height = innerHeight;
+  // reposition player to hug wall after resize
+  if(player){
+    player.x = getPlayerXForSide(player.side, player.radius);
+    player.targetX = player.x;
+  }
 });
 
 // Start UI
@@ -50,6 +65,7 @@ function init(){
   gameSpeed = 1;
   player = new Player();
   bindInput();
+  // ensure correct timing when starting the game loop
   last = performance.now();
   requestAnimationFrame(loop);
 }
@@ -69,20 +85,19 @@ function endGame(){
 class Player{
   constructor(){
     this.side = 'left'; // left or right
-    this.x = W*0.15;
-    this.y = H*0.5;
     this.radius = Math.min(28, W*0.03);
-    this.color = '#fff';
+    this.x = getPlayerXForSide(this.side, this.radius);
     this.targetX = this.x;
+    this.y = H*0.5;
+    this.color = '#fff';
     this.vy = 0;
     this.tilt = -6; // deg
     this.scale = 1;
   }
   switchSide(){
     this.side = this.side === 'left' ? 'right' : 'left';
-    this.targetX = this.side === 'left' ? W*0.15 : W*0.85;
-    this.vy = -8; // hop up a bit
-    // tilt UI
+    this.targetX = getPlayerXForSide(this.side, this.radius);
+    // no vertical hop on side switch anymore
     tiltScreen(this.side);
     // juicy
     shake(6);
@@ -123,23 +138,32 @@ class Player{
 class Spike{
   constructor(side, y){
     this.side = side;
-    this.x = side==='left'?W*0.05:W*0.95;
-    this.y = y || -50;
+    this.y = (typeof y === 'number') ? y : -50;
     this.w = Math.min(32, W*0.03);
-    this.h = this.w*1.4;
+    this.h = this.w*1.4; // length of spike
     this.color = '#ff5f5f';
   }
   update(dt){
     this.y += 160 * dt * gameSpeed;
   }
   draw(){
+    const wallW = getWallWidth();
+    const tx = (this.side === 'left') ? wallW : (W - wallW);
     ctx.save();
-    ctx.translate(this.x, this.y);
+    ctx.translate(tx, this.y);
     ctx.fillStyle = this.color;
     ctx.beginPath();
-    ctx.moveTo(-this.w, this.h);
-    ctx.lineTo(0, -this.h);
-    ctx.lineTo(this.w, this.h);
+    if(this.side === 'left'){
+      // base on wall (x=0), pointing right
+      ctx.moveTo(0, -this.w);
+      ctx.lineTo(this.h, 0);
+      ctx.lineTo(0, this.w);
+    } else {
+      // base on wall (x=0), pointing left (we'll mirror by using negative h)
+      ctx.moveTo(0, -this.w);
+      ctx.lineTo(-this.h, 0);
+      ctx.lineTo(0, this.w);
+    }
     ctx.closePath();
     ctx.fill();
     ctx.restore();
@@ -149,8 +173,9 @@ class Spike{
 class Coin{
   constructor(side, y){
     this.side = side;
-    this.x = side==='left'?W*0.12:W*0.88;
-    this.y = y || -30;
+    const wallW = getWallWidth();
+    this.x = (side==='left') ? (wallW + Math.min(12, W*0.015)*2) : (W - wallW - Math.min(12, W*0.015)*2);
+    this.y = (typeof y === 'number') ? y : -30;
     this.r = Math.min(12, W*0.015);
     this.collected = false;
   }
@@ -182,8 +207,9 @@ class Powerup{
   constructor(type, side, y){
     this.type = type; // 'double'|'magnet'|'shield'|'scoreburst'
     this.side = side;
-    this.x = side==='left'?W*0.12:W*0.88;
-    this.y = y || -60;
+    const wallW = getWallWidth();
+    this.x = (side==='left') ? (wallW + Math.min(16, W*0.02)*2) : (W - wallW - Math.min(16, W*0.02)*2);
+    this.y = (typeof y === 'number') ? y : -60;
     this.r = Math.min(16, W*0.02);
   }
   update(dt){
@@ -235,10 +261,10 @@ function shake(a){shakeAmt = Math.max(shakeAmt, a);}
 function spawnRandom(){
   const rand = Math.random();
   // spikes more likely
-  if(rand < 0.5){
+  if(rand < 0.6){
     const side = Math.random()<0.5?'left':'right';
     entities.push(new Spike(side, -60 - Math.random()*120));
-  }else if(rand < 0.78){
+  }else if(rand < 0.86){
     const side = Math.random()<0.5?'left':'right';
     entities.push(new Coin(side, -40 - Math.random()*80));
   }else{
@@ -345,7 +371,7 @@ function draw(dt){
   ctx.translate(shakeX,shakeY);
 
   // walls
-  const wallW = Math.min(140, W*0.2);
+  const wallW = getWallWidth();
   // left wall
   ctx.fillStyle = '#0c2b3b';
   roundRect(ctx, 0, 0, wallW, H, 0, true, false);

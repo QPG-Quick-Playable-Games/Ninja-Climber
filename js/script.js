@@ -306,6 +306,12 @@ function loop(now){
             shieldActive = false;entities.splice(i,1);spawnParticles(player.x,player.y,'#ffffff',12);
             shake(10);
           } else {
+            // Snap the player to the spike's side so the death frame shows correctly
+            player.side = e.side;
+            player.x = getPlayerXForSide(e.side, player.radius);
+            player.targetX = player.x;
+            player.vy = 0;
+
             spawnParticles(player.x,player.y,'#ff6b6b',25);
             shake(18);
             running = false;setTimeout(()=>endGame(),300);

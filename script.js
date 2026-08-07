@@ -1,4 +1,4 @@
-// Ninja Climber - Fullscreen, mobile-friendly, juices added (entities resized)
+// Ninja Climber - Fullscreen, mobile-friendly, juices added (entities resized, spike speed matched to other entities)
 const canvas = document.getElementById('game');
 const wrap = document.getElementById('game-wrap');
 const scoreEl = document.getElementById('score');
@@ -88,7 +88,8 @@ function doShake(intensity=8, duration=220){ shakeIntensity = intensity; shakeTi
 function spawnSpike(){
   const side = Math.random() < 0.5 ? 'left' : 'right';
   const x = side === 'left' ? leftX : rightX;
-  const vy = (rand(1.2,2.2)) * speedMultiplier();
+  // match spike fall speed to coins/powerups for consistent pacing
+  const vy = (rand(0.9,1.6)) * speedMultiplier();
   spikes.push({x, y:-20, vy, side});
 }
 function spawnCoin(){

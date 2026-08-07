@@ -50,7 +50,8 @@ function init(){
   gameSpeed = 1;
   player = new Player();
   bindInput();
-  loop();
+  last = performance.now();
+  requestAnimationFrame(loop);
 }
 
 function reset(){

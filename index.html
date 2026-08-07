@@ -2,20 +2,30 @@
 <html lang="en">
 <head>
   <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Ninja Climber</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
+  <title>Ninja Climber (Fullscreen)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <div id="game-wrap" class="tilt-left">
+  <div id="game-wrap">
     <canvas id="game"></canvas>
+
     <div id="ui">
-      <div id="score">Score: 0</div>
-      <div id="lives">Lives: ❤❤❤</div>
-      <div id="mult">x1</div>
-      <div id="msg">Click / Space to switch sides</div>
+      <div id="left-info">
+        <div id="score">Score: 0</div>
+        <div id="mult">x1</div>
+      </div>
+      <div id="right-info">
+        <div id="lives">Lives: ❤❤❤</div>
+      </div>
     </div>
+
+    <button id="btn-left" class="side-btn">◀</button>
+    <button id="btn-right" class="side-btn">▶</button>
+
+    <div id="msg">Tap left / right or press Space to switch</div>
   </div>
+
   <script src="script.js"></script>
 </body>
 </html>

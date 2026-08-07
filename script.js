@@ -1,4 +1,4 @@
-// Ninja Climber - Fullscreen, mobile-friendly, juices added
+// Ninja Climber - Fullscreen, mobile-friendly, juices added (updated tilt + game over)
 const canvas = document.getElementById('game');
 const wrap = document.getElementById('game-wrap');
 const scoreEl = document.getElementById('score');
@@ -51,14 +51,15 @@ function switchSide(fromButton=false){
   if(player.switchCooldown > 0) return;
   player.side = player.side === 'left' ? 'right' : 'left';
   player.x = player.side === 'left' ? leftX : rightX;
-  // tilt briefly
+  // tilt briefly by toggling class (CSS variable --tilt handles rotation smoothly)
   const cls = player.side === 'left' ? 'tilt-left' : 'tilt-right';
   wrap.classList.add(cls);
-  setTimeout(()=> wrap.classList.remove(cls), 160);
+  // keep tilt a bit longer and smoother than before
+  setTimeout(()=> wrap.classList.remove(cls), 480);
   // small burst and shake
   addParticles(player.x, player.y - 20, ['#fff','#60a5fa','#f97316'], 10);
-  doShake(6, 120);
-  player.switchCooldown = 140; // ms
+  doShake(6, 160);
+  player.switchCooldown = 260; // ms
 }
 window.addEventListener('keydown', e=>{
   if(e.code === 'Space'){ switchSide(); e.preventDefault(); }
@@ -69,7 +70,7 @@ btnLeft.addEventListener('mousedown', e=>{ e.preventDefault(); switchSide(true);
 btnRight.addEventListener('mousedown', e=>{ e.preventDefault(); switchSide(true); });
 wrap.addEventListener('click', ()=>{ if(gameOver) reset(); });
 
-// Screen shake state
+// Screen shake state implemented via CSS variables so it composes with tilt
 let shakeTime = 0, shakeIntensity = 0;
 function doShake(intensity=8, duration=220){ shakeIntensity = intensity; shakeTime = duration; }
 
@@ -115,7 +116,7 @@ function updateUI(){
 
 // Game reset
 function reset(){
-  score = 0; lives = 3; multiplier = 1; spikes = []; coins = []; powerups = []; particles = []; gameOver = false; running = true; msgEl.style.opacity = 1; msgEl.textContent = 'Tap left / right or press Space to switch';
+  score = 0; lives = 3; multiplier = 1; spikes = []; coins = []; powerups = []; particles = []; gameOver = false; running = true; msgEl.classList.remove('game-over'); msgEl.style.opacity = 0.9; msgEl.textContent = 'Tap left / right or press Space to switch';
 }
 
 // Main update loop
@@ -160,16 +161,25 @@ function loop(now){
       doShake(14,240);
       lives -= 1; score = Math.max(0, score - 8);
       spikes.splice(i,1);
-      if(lives <= 0){ gameOver = true; running = false; msgEl.textContent = 'Game Over — Click to restart'; msgEl.style.opacity = 1; if(score > highScore){ highScore = score; localStorage.setItem('nc_high', highScore); msgEl.textContent = 'New High Score! Click to restart'; } }
+      if(lives <= 0){ gameOver = true; running = false; msgEl.textContent = 'Game Over — Click to restart'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; if(score > highScore){ highScore = score; localStorage.setItem('nc_high', highScore); msgEl.textContent = 'New High Score! Click to restart'; } }
       break;
     } }
 
     // accelerate difficulty slowly as score increases - handled in spawnInterval and speedMultiplier
   }
 
-  // shake handling apply to wrap via translate
-  if(shakeTime > 0){ shakeTime -= dt; const s = (shakeTime/200) * shakeIntensity; const ox = rand(-s,s), oy = rand(-s,s); wrap.style.transform = `translate(${ox}px, ${oy}px)`; }
-  else { wrap.style.transform = ''; }
+  // shake handling via CSS variables so tilt and shake compose
+  if(shakeTime > 0){
+    shakeTime -= dt;
+    const t = Math.max(0, shakeTime);
+    const s = (t/220) * shakeIntensity;
+    const ox = rand(-s,s), oy = rand(-s,s);
+    wrap.style.setProperty('--tx', `${ox}px`);
+    wrap.style.setProperty('--ty', `${oy}px`);
+  } else {
+    wrap.style.setProperty('--tx', `0px`);
+    wrap.style.setProperty('--ty', `0px`);
+  }
 
   render(); updateUI();
   requestAnimationFrame(loop);

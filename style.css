@@ -1,15 +1,20 @@
 /* Fullscreen Ninja Climber styles */
-:root{--wall-width:96px;--ui-gap:14px}
+:root{--wall-width:96px;--ui-gap:14px;--tilt:0deg;--tx:0px;--ty:0px}
 *{box-sizing:border-box}
 html,body{height:100%;margin:0;padding:0}
 body{background:#071228;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-serif;overflow:hidden}
-#game-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.00) 20%), linear-gradient(180deg,#07122a 0%, #04121a 100%);backdrop-filter:blur(0.5px);transition:transform 140ms cubic-bezier(.2,.9,.3,1);}
+/* Use CSS variables so tilt and shake combine smoothly */
+#game-wrap{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:radial-gradient(ellipse at 20% 20%, rgba(255,255,255,0.02) 0%, rgba(255,255,255,0.00) 20%), linear-gradient(180deg,#07122a 0%, #04121a 100%);backdrop-filter:blur(0.5px);transition:transform 480ms cubic-bezier(.2,.9,.3,1);transform: rotate(var(--tilt, 0deg)) translate(var(--tx, 0px), var(--ty, 0px));}
 #game{width:100%;height:100%;display:block}
 
 /* UI */
 #ui{position:fixed;left:var(--ui-gap);right:var(--ui-gap);top:var(--ui-gap);display:flex;justify-content:space-between;pointer-events:none}
 #score,#lives,#mult{background:rgba(0,0,0,0.35);padding:8px 12px;border-radius:10px;color:#fff;font-weight:700;backdrop-filter:blur(4px);box-shadow:0 6px 18px rgba(0,0,0,0.45)}
-#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;color:rgba(255,255,255,0.9);font-weight:600;pointer-events:none}
+#msg{position:fixed;left:50%;transform:translateX(-50%);bottom:22px;color:rgba(255,255,255,0.9);font-weight:600;pointer-events:none;transition:opacity 300ms ease, transform 300ms ease}
+
+/* prominent game-over styling */
+#msg.game-over{position:fixed;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);font-size:36px;padding:20px 28px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));border-radius:14px;box-shadow:0 20px 50px rgba(0,0,0,0.6);z-index:80;opacity:1}
+#msg.game-over .small{display:block;font-size:14px;margin-top:8px;opacity:0.85}
 
 /* buttons for mobile */
 .side-btn{position:fixed;bottom:18px;z-index:60;border-radius:14px;background:linear-gradient(180deg,rgba(255,255,255,0.06),rgba(255,255,255,0.02));width:84px;height:84px;border:none;color:#fff;font-size:28px;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,0.45);-webkit-tap-highlight-color:transparent}
@@ -17,9 +22,9 @@ body{background:#071228;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-s
 #btn-right{right:18px}
 .side-btn:active{transform:scale(0.95)}
 
-/* tilt classes (applied briefly) */
-.tilt-left{transform:rotateZ(-6deg)}
-.tilt-right{transform:rotateZ(6deg)}
+/* tilt control via CSS variables */
+.tilt-left{--tilt: -6deg}
+.tilt-right{--tilt: 6deg}
 
 /* small responsive tweaks */
 @media (max-width:420px){:root{--wall-width:72px} .side-btn{width:68px;height:68px;font-size:22px}}

@@ -1,4 +1,4 @@
-// Ninja Climber - Fullscreen, mobile-friendly, juices added (updated tilt + game over)
+// Ninja Climber - Fullscreen, mobile-friendly, juices added (entities resized)
 const canvas = document.getElementById('game');
 const wrap = document.getElementById('game-wrap');
 const scoreEl = document.getElementById('score');
@@ -35,6 +35,16 @@ const player = {
   switchCooldown: 0
 };
 
+// --- SIZE TUNING: increase entity sizes here (player unchanged) ---
+const COIN_RADIUS = 18;       // was ~10
+const POWER_RADIUS = 20;      // was ~12
+const SPIKE_HALF = 18;        // used for drawing spike triangle (was 10)
+const PARTICLE_SIZE = 6;      // was 4
+const COLLIDE_COIN = 56;      // collision distance for coins (was 34)
+const COLLIDE_POWER = 56;     // collision distance for powerups
+const COLLIDE_SPIKE = 50;     // collision distance for spikes (was 30)
+// ---------------------------------------------------------------
+
 // Entities
 let spikes = [], coins = [], powerups = [], particles = [];
 
@@ -54,7 +64,7 @@ function switchSide(fromButton=false){
   // tilt briefly by toggling class (CSS variable --tilt handles rotation smoothly)
   const cls = player.side === 'left' ? 'tilt-left' : 'tilt-right';
   wrap.classList.add(cls);
-  // keep tilt a bit longer and smoother than before
+  // keep tilt a bit longer and smoother
   setTimeout(()=> wrap.classList.remove(cls), 480);
   // small burst and shake
   addParticles(player.x, player.y - 20, ['#fff','#60a5fa','#f97316'], 10);
@@ -144,22 +154,22 @@ function loop(now){
     // collisions
     const px = player.x; const py = player.y - 12;
     // coins
-    for(let i=coins.length-1;i>=0;i--){ const c = coins[i]; if(circleDist(px,py,c.x,c.y) < 34){ score += 10 * multiplier; addParticles(c.x,c.y,['#ffcf00','#ffd166','#fff'], 18); doShake(4,80); coins.splice(i,1); } }
+    for(let i=coins.length-1;i>=0;i--){ const c = coins[i]; if(circleDist(px,py,c.x,c.y) < COLLIDE_COIN){ score += 10 * multiplier; addParticles(c.x,c.y,['#ffcf00','#ffd166','#fff'], 28); doShake(6,110); coins.splice(i,1); } }
     // powerups
-    for(let i=powerups.length-1;i>=0;i--){ const p = powerups[i]; if(circleDist(px,py,p.x,p.y) < 34){
+    for(let i=powerups.length-1;i>=0;i--){ const p = powerups[i]; if(circleDist(px,py,p.x,p.y) < COLLIDE_POWER){
       if(p.kind === 'mult'){ multiplier = Math.min(5, multiplier + 1); setTimeout(()=> multiplier = Math.max(1, multiplier - 1), 8000); }
       else if(p.kind === 'extra'){ lives = Math.min(5, lives + 1); }
       else if(p.kind === 'slow'){ spikes.forEach(s=>s.vy *= 0.6); setTimeout(()=> spikes.forEach(s=> s.vy /= 0.6), 7000); }
       else if(p.kind === 'bonus'){ score += 50; }
-      addParticles(p.x,p.y,['#6ee7b7','#60a5fa','#f472b6'], 22); doShake(6,140); powerups.splice(i,1);
+      addParticles(p.x,p.y,['#6ee7b7','#60a5fa','#f472b6'], 32); doShake(8,160); powerups.splice(i,1);
     } }
 
     // spikes collisions
-    for(let i=spikes.length-1;i>=0;i--){ const s = spikes[i]; if(circleDist(px,py,s.x,s.y) < 30){
+    for(let i=spikes.length-1;i>=0;i--){ const s = spikes[i]; if(circleDist(px,py,s.x,s.y) < COLLIDE_SPIKE){
       // hit
-      addParticles(px,py,['#f87171','#fb7185','#fff'], 28);
-      doShake(14,240);
-      lives -= 1; score = Math.max(0, score - 8);
+      addParticles(px,py,['#f87171','#fb7185','#fff'], 40);
+      doShake(18,260);
+      lives -= 1; score = Math.max(0, score - 12);
       spikes.splice(i,1);
       if(lives <= 0){ gameOver = true; running = false; msgEl.textContent = 'Game Over — Click to restart'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; if(score > highScore){ highScore = score; localStorage.setItem('nc_high', highScore); msgEl.textContent = 'New High Score! Click to restart'; } }
       break;
@@ -202,23 +212,23 @@ function render(){
 
   // draw coins
   coins.forEach(c=>{
-    ctx.beginPath(); ctx.fillStyle = '#ffd166'; ctx.arc(c.x, c.y, 10, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#fff8'; ctx.fillRect(c.x-4, c.y-6, 6,5);
+    ctx.beginPath(); ctx.fillStyle = '#ffd166'; ctx.arc(c.x, c.y, COIN_RADIUS, 0, Math.PI*2); ctx.fill(); ctx.fillStyle = '#fff8'; ctx.fillRect(c.x-6, c.y-8, 10,6);
   });
 
   // draw powerups
   powerups.forEach(p=>{
     ctx.save(); ctx.translate(p.x, p.y);
-    ctx.beginPath(); if(p.kind==='mult'){ ctx.fillStyle='#60a5fa'; ctx.arc(0,0,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='14px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('x',0,0); }
-    else if(p.kind==='extra'){ ctx.fillStyle='#fb7185'; ctx.arc(0,0,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillText('+',0,0); }
-    else if(p.kind==='slow'){ ctx.fillStyle='#34d399'; ctx.arc(0,0,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillText('-',0,0); }
-    else { ctx.fillStyle='#a78bfa'; ctx.arc(0,0,12,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.fillText('★',0,0); }
+    ctx.beginPath(); if(p.kind==='mult'){ ctx.fillStyle='#60a5fa'; ctx.arc(0,0,POWER_RADIUS,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='18px sans-serif'; ctx.textAlign='center'; ctx.textBaseline='middle'; ctx.fillText('x',0,0); }
+    else if(p.kind==='extra'){ ctx.fillStyle='#fb7185'; ctx.arc(0,0,POWER_RADIUS,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='18px sans-serif'; ctx.fillText('+',0,0); }
+    else if(p.kind==='slow'){ ctx.fillStyle='#34d399'; ctx.arc(0,0,POWER_RADIUS,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='18px sans-serif'; ctx.fillText('-',0,0); }
+    else { ctx.fillStyle='#a78bfa'; ctx.arc(0,0,POWER_RADIUS,0,Math.PI*2); ctx.fill(); ctx.fillStyle='#fff'; ctx.font='18px sans-serif'; ctx.fillText('★',0,0); }
     ctx.restore();
   });
 
-  // draw spikes
+  // draw spikes (bigger)
   spikes.forEach(s=>{
     ctx.save(); ctx.translate(s.x, s.y);
-    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(-10, -6); ctx.lineTo(10, 0); ctx.lineTo(-10, 6); ctx.closePath(); ctx.fill();
+    ctx.fillStyle = '#ef4444'; ctx.beginPath(); ctx.moveTo(-SPIKE_HALF, -Math.floor(SPIKE_HALF/1.8)); ctx.lineTo(SPIKE_HALF, 0); ctx.lineTo(-SPIKE_HALF, Math.floor(SPIKE_HALF/1.8)); ctx.closePath(); ctx.fill();
     ctx.restore();
   });
 
@@ -231,10 +241,10 @@ function render(){
   ctx.fillStyle = '#fff'; ctx.fillText('🥷🏻', px, py-6);
   ctx.restore();
 
-  // particles
+  // particles (slightly larger)
   particles.forEach(p=>{
     ctx.globalAlpha = 1 - (p.age / p.life);
-    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, 4, 4);
+    ctx.fillStyle = p.color; ctx.fillRect(p.x, p.y, PARTICLE_SIZE, PARTICLE_SIZE);
     ctx.globalAlpha = 1;
   });
 

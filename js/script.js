@@ -4,6 +4,9 @@ const ctx = canvas.getContext('2d');
 let W = canvas.width = innerWidth;
 let H = canvas.height = innerHeight;
 
+const STORAGE_KEY = 'ninjaClimberInput';
+const PLAYER_EMOJI = '🥷🏻';
+
 const scoreEl = document.getElementById('score');
 const powerupsEl = document.getElementById('powerups');
 const overlay = document.getElementById('overlay');
@@ -28,6 +31,13 @@ function getPlayerXForSide(side, radius){
   return W - wallW - gap;
 }
 
+function getStoredChoice(){
+  const v = localStorage.getItem(STORAGE_KEY);
+  if(v === 'mobile') return true;
+  if(v === 'pc') return false;
+  return null;
+}
+
 window.addEventListener('resize', ()=>{
   W = canvas.width = innerWidth;
   H = canvas.height = innerHeight;
@@ -43,8 +53,17 @@ document.getElementById('pcBtn').addEventListener('click', ()=>start(false));
 document.getElementById('mobileBtn').addEventListener('click', ()=>start(true));
 document.getElementById('restartBtn').addEventListener('click', ()=>reset());
 
+// If user had a saved choice, start automatically
+const stored = getStoredChoice();
+if(stored !== null){
+  // give the UI a moment to render then auto-start
+  setTimeout(()=> start(stored), 180);
+}
+
 function start(mobile){
   isMobileInput = mobile;
+  // remember choice
+  try{ localStorage.setItem(STORAGE_KEY, mobile ? 'mobile' : 'pc'); }catch(e){}
   overlay.classList.add('hidden');
   setTimeout(()=>overlay.classList.remove('visible'),200);
   init();
@@ -71,6 +90,14 @@ function init(){
 }
 
 function reset(){
+  // If player previously chose a mode, resume that automatically
+  const storedChoice = getStoredChoice();
+  if(storedChoice !== null){
+    // short delay to allow modal hide animation to be consistent
+    setTimeout(()=> start(storedChoice), 80);
+    return;
+  }
+
   gameOverEl.classList.add('hidden');
   overlay.classList.remove('hidden');
 }
@@ -116,20 +143,12 @@ class Player{
   draw(){
     ctx.save();
     ctx.translate(this.x, this.y);
-    // ninja body
-    ctx.fillStyle = this.color;
-    // head
-    ctx.beginPath();
-    ctx.arc(0, -this.radius*0.25, this.radius*0.4, 0, Math.PI*2);
-    ctx.fill();
-    // body
-    ctx.beginPath();
-    ctx.ellipse(0, this.radius*0.2, this.radius*0.6*this.scale, this.radius*0.9*this.scale, 0, 0, Math.PI*2);
-    ctx.fill();
-    // eye slits
-    ctx.fillStyle = '#111';
-    ctx.fillRect(-this.radius*0.2, -this.radius*0.35, this.radius*0.12, 3);
-    ctx.fillRect(this.radius*0.06, -this.radius*0.35, this.radius*0.12, 3);
+    // draw emoji centered
+    const fontSize = Math.max(24, this.radius * 2.6);
+    ctx.font = `${fontSize}px "Segoe UI Emoji", "Apple Color Emoji", "Noto Color Emoji", sans-serif`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(PLAYER_EMOJI, 0, -2);
     ctx.restore();
   }
 }
@@ -159,7 +178,7 @@ class Spike{
       ctx.lineTo(this.h, 0);
       ctx.lineTo(0, this.w);
     } else {
-      // base on wall (x=0), pointing left (we'll mirror by using negative h)
+      // base on wall (x=0), pointing left
       ctx.moveTo(0, -this.w);
       ctx.lineTo(-this.h, 0);
       ctx.lineTo(0, this.w);

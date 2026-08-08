@@ -21,6 +21,7 @@ body{background:#071228;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-s
 #btn-left{left:18px}
 #btn-right{right:18px}
 .side-btn:active{transform:scale(0.95)}
+.side-btn.disabled{opacity:0.45;pointer-events:none;filter:grayscale(0.2)}
 
 /* tilt control via CSS variables */
 .tilt-left{--tilt: -6deg}

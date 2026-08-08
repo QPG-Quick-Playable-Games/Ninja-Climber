@@ -1,4 +1,4 @@
-// Ninja Climber - Fullscreen, mobile-friendly, improved spawning, survival score, main menu
+// Ninja Climber - Fullscreen, mobile-friendly, improved spawning, survival score, main menu (menu-first behavior)
 const canvas = document.getElementById('game');
 const wrap = document.getElementById('game-wrap');
 const scoreEl = document.getElementById('score');
@@ -98,6 +98,11 @@ document.getElementById('how-close').addEventListener('click', ()=>{ howto.class
 
 wrap.addEventListener('click', ()=>{ if(gameOver) restartFromMenu(); });
 
+// ensure menu is visible first and disable side buttons until game starts
+menu.classList.add('menu-visible'); menu.classList.remove('menu-hidden');
+btnLeft.classList.add('disabled'); btnRight.classList.add('disabled');
+msgEl.textContent = '';
+
 // Screen shake state via CSS vars
 let shakeTime = 0, shakeIntensity = 0;
 function doShake(intensity=8, duration=220){ shakeIntensity = intensity; shakeTime = duration; }
@@ -106,7 +111,6 @@ function doShake(intensity=8, duration=220){ shakeIntensity = intensity; shakeTi
 function spawnSpike(){
   let side = Math.random() < 0.5 ? 'left' : 'right';
   const other = side === 'left' ? 'right' : 'left';
-  // if there is a spike on the other side very near top, avoid spawning opposite; spawn on that same side instead
   const nearOpp = spikes.find(s => s.side === other && s.y < Math.max(140, H*0.18));
   if(nearOpp){ side = nearOpp.side; }
   const x = side === 'left' ? leftX : rightX;
@@ -151,9 +155,9 @@ function startGame(){
   menu.classList.add('menu-hidden'); menu.classList.remove('menu-visible');
   howto.classList.add('howto-hidden');
   score = 0; lives = 3; multiplier = 1; spikes = []; coins = []; powerups = []; particles = []; gameOver = false; running = true; msgEl.classList.remove('game-over'); msgEl.textContent = 'Good luck!';
+  btnLeft.classList.remove('disabled'); btnRight.classList.remove('disabled');
 }
 function restartFromMenu(){
-  // show menu on click after gameover
   menu.classList.remove('menu-hidden'); menu.classList.add('menu-visible');
   running = false; gameOver = false; msgEl.classList.remove('game-over');
   highScore = Math.max(highScore, score); localStorage.setItem('nc_high', highScore); highscoreEl.textContent = highScore;

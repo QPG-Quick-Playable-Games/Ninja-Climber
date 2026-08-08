@@ -8,13 +8,7 @@ window.addEventListener('load', ()=>{
   const msgEl = document.getElementById('msg');
   const btnLeft = document.getElementById('btn-left');
   const btnRight = document.getElementById('btn-right');
-  const btnStart = document.getElementById('btn-start');
-  const btnHow = document.getElementById('btn-how');
-  const btnHub = document.getElementById('btn-hub');
-  const howto = document.getElementById('howto');
-  const menu = document.getElementById('menu');
-  const highscoreEl = document.getElementById('highscore');
-  const howCloseBtn = document.getElementById('how-close');
+  const highscoreEl = document.getElementById('highscore'); // may be null now that menu removed
   const ctx = canvas.getContext('2d', { alpha: false });
 
   let W = 800, H = 600;
@@ -28,9 +22,8 @@ window.addEventListener('load', ()=>{
 
   // Game state
   let score = 0, lives = 3, multiplier = 1;
-  let running = false, gameOver = false; // start in menu, not running
+  let running = false, gameOver = false; // start after init
   let highScore = Number(localStorage.getItem('nc_high') || 0);
-  highscoreEl.textContent = highScore;
 
   const wallWidth = Math.max(72, Math.floor(Math.min(W,900) * 0.12));
   let leftX = Math.floor(wallWidth * 0.8);
@@ -95,16 +88,9 @@ window.addEventListener('load', ()=>{
     btnRight.addEventListener('mousedown', e=>{ e.preventDefault(); switchSide(true); });
   }
 
-  // Menu buttons - guard each
-  if(btnStart) btnStart.addEventListener('click', ()=>{ startGame(); });
-  if(btnHow) btnHow.addEventListener('click', ()=>{ if(howto) howto.classList.remove('howto-hidden'); });
-  if(howCloseBtn) howCloseBtn.addEventListener('click', ()=>{ if(howto) howto.classList.add('howto-hidden'); });
-
-  // ensure menu is visible first and disable side buttons until game starts
-  if(menu){ menu.classList.add('menu-visible'); menu.classList.remove('menu-hidden'); }
-  if(btnLeft) btnLeft.classList.add('disabled');
-  if(btnRight) btnRight.classList.add('disabled');
-  if(msgEl) msgEl.textContent = '';
+  // ensure controls are enabled (we auto-start the game)
+  if(btnLeft) btnLeft.classList.remove('disabled');
+  if(btnRight) btnRight.classList.remove('disabled');
 
   // Screen shake state via CSS vars
   let shakeTime = 0, shakeIntensity = 0;
@@ -155,18 +141,19 @@ window.addEventListener('load', ()=>{
 
   // Start / Restart
   function startGame(){
-    if(menu){ menu.classList.add('menu-hidden'); menu.classList.remove('menu-visible'); }
-    if(howto) howto.classList.add('howto-hidden');
+    // start immediately
     score = 0; lives = 3; multiplier = 1; spikes = []; coins = []; powerups = []; particles = []; gameOver = false; running = true; if(msgEl) msgEl.classList.remove('game-over'); if(msgEl) msgEl.textContent = 'Good luck!';
     if(btnLeft) btnLeft.classList.remove('disabled'); if(btnRight) btnRight.classList.remove('disabled');
   }
   function restartFromMenu(){
-    if(menu){ menu.classList.remove('menu-hidden'); menu.classList.add('menu-visible'); }
+    // With no menu, clicking after game over will just restart the game immediately
     running = false; gameOver = false; if(msgEl) msgEl.classList.remove('game-over');
-    highScore = Math.max(highScore, score); localStorage.setItem('nc_high', highScore); if(highscoreEl) highscoreEl.textContent = highScore;
+    highScore = Math.max(highScore, score); localStorage.setItem('nc_high', highScore);
+    startGame();
   }
   function resetToMenu(){
-    running = false; gameOver = false; if(menu){ menu.classList.remove('menu-hidden'); menu.classList.add('menu-visible'); }
+    // not used when menu removed — just stop the game
+    running = false; gameOver = false;
   }
 
   // Main update loop
@@ -221,7 +208,7 @@ window.addEventListener('load', ()=>{
         doShake(18,260);
         lives -= 1; score = Math.max(0, score - 12);
         spikes.splice(i,1);
-        if(lives <= 0){ gameOver = true; running = false; if(msgEl){ msgEl.textContent = 'Game Over — Click to return to menu'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; } if(score > highScore){ highScore = score; localStorage.setItem('nc_high', highScore); if(msgEl) msgEl.textContent = 'New High Score! Click to return to menu'; } }
+        if(lives <= 0){ gameOver = true; running = false; if(msgEl){ msgEl.textContent = 'Game Over — Click to restart'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; } if(score > highScore){ highScore = score; localStorage.setItem('nc_high', highScore); } }
         break;
       } }
 
@@ -312,6 +299,9 @@ window.addEventListener('load', ()=>{
   // small helper to start with a bit of instructions fade
   setTimeout(()=> { if(msgEl) msgEl.style.opacity = 0.9; }, 1000);
   setTimeout(()=> { if(msgEl) msgEl.style.opacity = 0.6; }, 4000);
+
+  // Start game automatically now that menu removed
+  setTimeout(()=> startGame(), 80);
 
   // friendly autosave high score on unload
   window.addEventListener('beforeunload', ()=> localStorage.setItem('nc_high', highScore));

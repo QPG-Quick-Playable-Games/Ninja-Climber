@@ -1,4 +1,4 @@
-// Ninja Climber - fixes: correct left spawn, unified entity speed scaling, larger entities, click-to-restart, bigger GUI
+// Ninja Climber - fixes: correct declaration order to avoid ReferenceError, unified entity speed scaling, larger entities, click-to-restart, bigger GUI
 window.addEventListener('load', ()=>{
   const canvas = document.getElementById('game');
   const wrap = document.getElementById('game-wrap');
@@ -10,8 +10,14 @@ window.addEventListener('load', ()=>{
   const btnRight = document.getElementById('btn-right');
   const ctx = canvas.getContext('2d', { alpha: false });
 
+  // Dimensions and layout
   let W = 800, H = 600;
   let wallWidth = 96;
+  // ensure lane positions exist before calling resize()
+  let leftX = 96, rightX = 704;
+  // Screen shake state (declare early)
+  let shakeTime = 0, shakeIntensity = 0;
+
   function resize(){
     W = Math.max(320, window.innerWidth);
     H = Math.max(320, window.innerHeight);
@@ -29,9 +35,6 @@ window.addEventListener('load', ()=>{
   let running = false, gameOver = false;
   let highScore = Number(localStorage.getItem('nc_high') || 0);
   let startTime = performance.now();
-
-  // Positions
-  let leftX = 96, rightX = 704;
 
   const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
 
@@ -268,7 +271,5 @@ window.addEventListener('load', ()=>{
   // autosave
   window.addEventListener('beforeunload', ()=> localStorage.setItem('nc_high', highScore));
 
-  // Screen shake state
-  let shakeTime = 0, shakeIntensity = 0;
   function doShake(intensity=8, duration=220){ shakeIntensity = intensity; shakeTime = duration; }
 });

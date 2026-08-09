@@ -47,9 +47,9 @@ window.addEventListener('load', ()=>{
   const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
 
   // VERY BIG entities
-  const COIN_RADIUS = 48;
-  const POWER_RADIUS = 56;
-  const SPIKE_HALF = 56;
+  const COIN_RADIUS = 30;
+  const POWER_RADIUS = 30;
+  const SPIKE_HALF = 40;
   const PARTICLE_SIZE = 12;
   const COLLIDE_COIN = 120;
   const COLLIDE_POWER = 120;

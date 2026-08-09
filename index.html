@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,viewport-fit=cover" />
-  <title>Ninja Climber </title>
+  <title>Ninja Climber (Fullscreen)</title>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -25,10 +25,39 @@
 
     <div id="msg">Tap left / right or press Space to switch</div>
 
+    <!-- Main menu overlay -->
+    <div id="menu" class="menu-visible">
+      <div class="menu-card">
+        <h1>Ninja Climber</h1>
+        <div class="menu-buttons">
+          <button id="btn-start" class="menu-btn">Start</button>
+          <button id="btn-how" class="menu-btn">How To Play</button>
+          <a id="btn-hub" class="menu-btn" href="https://qpg-quick-playable-games.github.io/QPG-Hub/" target="_blank" rel="noopener">Back to QPG Hub</a>
+        </div>
+        <div class="menu-footer">High Score: <span id="highscore">0</span></div>
+      </div>
+    </div>
+
+    <!-- How to play modal -->
+    <div id="howto" class="howto-hidden">
+      <div class="howto-card">
+        <h2>How To Play</h2>
+        <p>Tap the left or right button (or press Space) to move your ninja between the two walls. Collect coins (+30) and power-ups, avoid spikes. Survive longer to earn periodic score bonuses.</p>
+        <ul>
+          <li>Coins: +30 score</li>
+          <li>Power-ups: multiplier, extra life, slow spikes, score boost</li>
+          <li>Spikes: avoid — hitting one loses a life</li>
+        </ul>
+        <div class="howto-actions">
+          <button id="how-close" class="menu-btn">Close</button>
+        </div>
+      </div>
+    </div>
+
   </div>
 
   <!-- Load game script (cache-busted) -->
-  <script src="script.js?v=20260808-3"></script>
+  <script src="script.js?v=20260809-1"></script>
 
 </body>
 </html>

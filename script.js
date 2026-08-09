@@ -1,4 +1,4 @@
-// Ninja Climber - tuned: slower spike spawn rate, increased spike fall speed (spikes faster, spawn less often)
+// Ninja Climber - menu reintroduced: Start, How To, Back to Hub; Start hides menu and begins play
 window.addEventListener('load', ()=>{
   const canvas = document.getElementById('game');
   const wrap = document.getElementById('game-wrap');
@@ -8,6 +8,13 @@ window.addEventListener('load', ()=>{
   const msgEl = document.getElementById('msg');
   const btnLeft = document.getElementById('btn-left');
   const btnRight = document.getElementById('btn-right');
+  const btnStart = document.getElementById('btn-start');
+  const btnHow = document.getElementById('btn-how');
+  const btnHub = document.getElementById('btn-hub');
+  const howto = document.getElementById('howto');
+  const menu = document.getElementById('menu');
+  const howClose = document.getElementById('how-close');
+  const highscoreEl = document.getElementById('highscore');
   const ctx = canvas.getContext('2d', { alpha: false });
 
   // Dimensions and layout
@@ -34,14 +41,15 @@ window.addEventListener('load', ()=>{
   let score = 0, lives = 3, multiplier = 1;
   let running = false, gameOver = false;
   let highScore = Number(localStorage.getItem('nc_high') || 0);
+  if(highscoreEl) highscoreEl.textContent = highScore;
   let startTime = performance.now();
 
   const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
 
   // VERY BIG entities
-  const COIN_RADIUS = 30;
-  const POWER_RADIUS = 30;
-  const SPIKE_HALF = 40;
+  const COIN_RADIUS = 48;
+  const POWER_RADIUS = 56;
+  const SPIKE_HALF = 56;
   const PARTICLE_SIZE = 12;
   const COLLIDE_COIN = 120;
   const COLLIDE_POWER = 120;
@@ -96,11 +104,29 @@ window.addEventListener('load', ()=>{
     btnRight.addEventListener('mousedown', e=>{ e.preventDefault(); switchSide(true); });
   }
 
-  // Allow click/tap anywhere to restart after game over
-  wrap.addEventListener('pointerdown', ()=>{ if(gameOver) restartFromMenu(); });
+  // Menu controls
+  function showMenu(){
+    if(menu){ menu.classList.remove('menu-hidden'); menu.classList.add('menu-visible'); }
+    // disable side buttons until player starts
+    if(btnLeft) btnLeft.classList.add('disabled');
+    if(btnRight) btnRight.classList.add('disabled');
+    running = false;
+  }
+  function hideMenu(){
+    if(menu){ menu.classList.remove('menu-visible'); menu.classList.add('menu-hidden'); }
+    if(btnLeft) btnLeft.classList.remove('disabled');
+    if(btnRight) btnRight.classList.remove('disabled');
+  }
+
+  if(btnStart) btnStart.addEventListener('click', ()=>{ hideMenu(); startGame(); });
+  if(btnHow) btnHow.addEventListener('click', ()=>{ if(howto) howto.classList.remove('howto-hidden'); });
+  if(howClose) howClose.addEventListener('click', ()=>{ if(howto) howto.classList.add('howto-hidden'); });
+  if(btnHub) btnHub.addEventListener('click', ()=>{ /* anchor will handle navigation */ });
+
+  // Allow click/tap anywhere to show menu after game over
+  wrap.addEventListener('pointerdown', ()=>{ if(gameOver) showMenu(); });
 
   // Spawning
-  // Spikes: spawn less frequently but fall faster (using SPIKE_SPEED_MULT)
   function spawnSpike(){
     const side = Math.random() < 0.5 ? 'left' : 'right';
     const x = side === 'left' ? leftX : rightX;
@@ -138,6 +164,7 @@ window.addEventListener('load', ()=>{
     if(scoreEl) scoreEl.textContent = `Score: ${Math.floor(score)}`;
     if(multEl) multEl.textContent = `x${multiplier}`;
     if(livesEl) livesEl.textContent = `Lives: ${'❤'.repeat(Math.max(0,lives))}`;
+    if(highscoreEl) highscoreEl.textContent = highScore;
   }
 
   // Start / Restart
@@ -147,10 +174,10 @@ window.addEventListener('load', ()=>{
     startTime = performance.now();
   }
   function restartFromMenu(){
-    // restart instantly when clicking after game over
+    // show menu rather than auto-restart
     running = false; gameOver = false; if(msgEl) msgEl.classList.remove('game-over');
     highScore = Math.max(highScore, Math.floor(score)); localStorage.setItem('nc_high', highScore);
-    startGame();
+    showMenu();
   }
 
   // Main loop
@@ -198,7 +225,7 @@ window.addEventListener('load', ()=>{
         doShake(18,260);
         lives -= 1; score = Math.max(0, score - 40);
         spikes.splice(i,1);
-        if(lives <= 0){ gameOver = true; running = false; if(msgEl){ msgEl.textContent = 'Game Over — Click to restart'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; } if(Math.floor(score) > highScore){ highScore = Math.floor(score); localStorage.setItem('nc_high', highScore); if(msgEl) msgEl.textContent = 'New High Score! Click to restart'; } }
+        if(lives <= 0){ gameOver = true; running = false; if(msgEl){ msgEl.textContent = 'Game Over — Tap to return to menu'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; } if(Math.floor(score) > highScore){ highScore = Math.floor(score); localStorage.setItem('nc_high', highScore); if(msgEl) msgEl.textContent = 'New High Score! Tap to return to menu'; } showMenu(); }
         break;
       } }
 
@@ -269,8 +296,8 @@ window.addEventListener('load', ()=>{
   setTimeout(()=> { if(msgEl) msgEl.style.opacity = 0.9; }, 1000);
   setTimeout(()=> { if(msgEl) msgEl.style.opacity = 0.6; }, 4000);
 
-  // auto start
-  setTimeout(()=> startGame(), 120);
+  // start with menu visible
+  showMenu();
 
   // autosave
   window.addEventListener('beforeunload', ()=> localStorage.setItem('nc_high', highScore));

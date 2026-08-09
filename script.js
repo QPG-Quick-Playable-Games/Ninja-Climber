@@ -44,7 +44,7 @@ window.addEventListener('load', ()=>{
   if(highscoreEl) highscoreEl.textContent = highScore;
   let startTime = performance.now();
 
-  const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
+  const player = { side: 'left', x: leftX, y: H - 130, size: 52, switchCooldown: 0 };
 
   // VERY BIG entities
   const COIN_RADIUS = 30;

@@ -47,9 +47,9 @@ window.addEventListener('load', ()=>{
   const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
 
   // VERY BIG entities
-  const COIN_RADIUS = 30;
-  const POWER_RADIUS = 30;
-  const SPIKE_HALF = 40;
+  const COIN_RADIUS = 48;
+  const POWER_RADIUS = 56;
+  const SPIKE_HALF = 56;
   const PARTICLE_SIZE = 12;
   const COLLIDE_COIN = 120;
   const COLLIDE_POWER = 120;
@@ -225,7 +225,7 @@ window.addEventListener('load', ()=>{
         doShake(18,260);
         lives -= 1; score = Math.max(0, score - 40);
         spikes.splice(i,1);
-        if(lives <= 0){ gameOver = true; running = false; } if(Math.floor(score) > highScore){ highScore = Math.floor(score); localStorage.setItem('nc_high', highScore); if(msgEl) msgEl.textContent = 'New High Score! Tap to return to menu'; } showMenu(); }
+        if(lives <= 0){ gameOver = true; running = false; if(msgEl){ msgEl.textContent = 'Game Over — Tap to return to menu'; msgEl.classList.add('game-over'); msgEl.style.opacity = 1; } if(Math.floor(score) > highScore){ highScore = Math.floor(score); localStorage.setItem('nc_high', highScore); if(msgEl) msgEl.textContent = 'New High Score! Tap to return to menu'; } showMenu(); }
         break;
       } }
 

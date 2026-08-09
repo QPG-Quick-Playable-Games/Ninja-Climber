@@ -1,4 +1,4 @@
-// Ninja Climber - fixes: correct declaration order to avoid ReferenceError, unified entity speed scaling, larger entities, click-to-restart, bigger GUI
+// Ninja Climber - tuned: slower spike spawn rate, increased spike fall speed (spikes faster, spawn less often)
 window.addEventListener('load', ()=>{
   const canvas = document.getElementById('game');
   const wrap = document.getElementById('game-wrap');
@@ -39,9 +39,9 @@ window.addEventListener('load', ()=>{
   const player = { side: 'left', x: leftX, y: H - 96, size: 52, switchCooldown: 0 };
 
   // VERY BIG entities
-  const COIN_RADIUS = 30;
-  const POWER_RADIUS = 30;
-  const SPIKE_HALF = 35;
+  const COIN_RADIUS = 48;
+  const POWER_RADIUS = 56;
+  const SPIKE_HALF = 56;
   const PARTICLE_SIZE = 12;
   const COLLIDE_COIN = 120;
   const COLLIDE_POWER = 120;
@@ -62,13 +62,16 @@ window.addEventListener('load', ()=>{
   // Difficulty / speed
   const BASE_SPEED = 1.2; // base multiplier
   const BASE_ENTITY_SPEED = 2.2; // base vy in px/frame-ish (will be scaled)
+  // spike-specific speed multiplier (we'll make spikes fall noticeably faster without increasing spawn rate)
+  const SPIKE_SPEED_MULT = 1.9;
+
   function speedMultiplier(){
     // increase with elapsed time since start so players see clear speedup
     const t = (performance.now() - startTime) / 1000; // seconds
     return BASE_SPEED + Math.min(6, t / 6); // + ~1 every 6s, capped
   }
   function entityVy(){
-    // single unified speed for all falling entities
+    // single unified speed baseline for non-spike falling entities
     return BASE_ENTITY_SPEED * speedMultiplier();
   }
 
@@ -96,11 +99,12 @@ window.addEventListener('load', ()=>{
   // Allow click/tap anywhere to restart after game over
   wrap.addEventListener('pointerdown', ()=>{ if(gameOver) restartFromMenu(); });
 
-  // Spawning - use truly random sides to avoid bias
+  // Spawning
+  // Spikes: spawn less frequently but fall faster (using SPIKE_SPEED_MULT)
   function spawnSpike(){
     const side = Math.random() < 0.5 ? 'left' : 'right';
     const x = side === 'left' ? leftX : rightX;
-    const vy = entityVy();
+    const vy = entityVy() * SPIKE_SPEED_MULT;
     spikes.push({x, y:-60, vy, side});
   }
   function spawnCoin(){
@@ -161,8 +165,8 @@ window.addEventListener('load', ()=>{
       if(survivalElapsed >= effectiveInterval){ survivalElapsed -= effectiveInterval; score += SURVIVAL_TICK * multiplier; }
 
       lastSpike += dt; lastCoin += dt; lastPower += dt;
-      // spawn intervals slightly randomized
-      if(lastSpike > Math.max(400, 900 - score * 0.5)){ spawnSpike(); lastSpike = 0; }
+      // spike spawn rate is intentionally slower now (higher base timers)
+      if(lastSpike > Math.max(1200, 1600 - score * 0.2)){ spawnSpike(); lastSpike = 0; }
       if(lastCoin > Math.max(600, 1100 - score * 0.3)){ spawnCoin(); lastCoin = 0; }
       if(lastPower > Math.max(2500, 4000 - score * 0.5)){ spawnPower(); lastPower = 0; }
 

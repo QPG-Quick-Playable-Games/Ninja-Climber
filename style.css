@@ -12,7 +12,7 @@ body{background:#071228;font-family:Inter,system-ui,Segoe UI,Roboto,Arial,sans-s
 #msg{position:fixed;left:50%;transform:translateX(-50%);bottom:34px;color:rgba(255,255,255,0.95);font-weight:800;pointer-events:none;transition:opacity 300ms ease, transform 300ms ease}
 
 /* prominent game-over styling */
-#msg.game-over{position:fixed;left:50%;top:50%;bottom:auto;transform:translate(-50%,-50%);font-size:44px;padding:22px 30px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,0.7);z-index:80;opacity:1}
+#msg.game-over{position:fixed;left:50%;top:20px;bottom:auto;transform:translateX(-50%);font-size:44px;padding:22px 30px;background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.45));border-radius:14px;box-shadow:0 30px 80px rgba(0,0,0,0.7);z-index:80;opacity:1}
 #msg.game-over .small{display:block;font-size:16px;margin-top:10px;opacity:0.9}
 
 /* buttons for mobile - larger */
